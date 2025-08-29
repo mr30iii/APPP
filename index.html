@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberHack Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        :root {
+            --primary: #00ff00;
+            --primary-dark: #00cc00;
+            --primary-light: #33ff33;
+            --secondary: #00aaff;
+            --secondary-dark: #0088cc;
+            --dark-bg: #0a0a0a;
+            --dark-card: #111;
+            --light-bg: #f0f0f0;
+            --light-card: #e0e0e0;
+            --text-dark: #00ff00;
+            --text-light: #003300;
+            --shadow-glow: 0 0 15px var(--primary), 0 0 25px var(--primary), 0 0 10px var(--secondary);
+            --shadow-subtle: 0 4px 20px rgba(0, 255, 0, 0.25);
+            --transition: all 0.3s ease;
+            --neon-pulse: #00ff00;
+            --holo-gradient: linear-gradient(45deg, rgba(0, 255, 0, 0.2), rgba(0, 170, 255, 0.2), transparent);
+            --bitcoin-gold: #f7931a;
+            --bitcoin-dark: #d47b0f;
+            --bitcoin-glow: 0 0 15px var(--bitcoin-gold), 0 0 25px var(--bitcoin-dark);
+        }
+        body {
+            background: var(--dark-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            transition: var(--transition);
+            overflow-x: hidden;
+            position: relative;
+            font-family: 'Orbitron', 'Courier New', monospace;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 255, 0, 0.05), rgba(0, 170, 255, 0.1));
+            opacity: 0.3;
+            z-index: -2;
+            animation: backgroundPulse 8s infinite alternate;
+        }
+        body.light-mode {
+            background: var(--light-bg);
+            color: var(--text-light);
+        }
+        body.light-mode::before {
+            background: linear-gradient(45deg, rgba(0, 150, 0, 0.1), rgba(0, 136, 204, 0.2));
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--dark-card);
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 6px;
+            box-shadow: var(--shadow-glow);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+        body.light-mode ::-webkit-scrollbar-track {
+            background: var(--light-card);
+        }
+        body.light-mode ::-webkit-scrollbar-thumb {
+            background: var(--primary-dark);
+        }
+        /* Particle Background */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: var(--shadow-glow);
+            animation: float 12s infinite linear;
+        }
+        .particle:nth-child(odd) {
+            background: var(--secondary);
+            border-radius: 0;
+            transform: rotate(45deg);
+        }
+        /* Cursor Trail */
+        .cursor-trail {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--primary), 0 0 25px var(--secondary);
+            pointer-events: none;
+            z-index: 9999;
+            animation: fadeOut 0.5s forwards;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+        /* Header */
+        header {
+            grid-column: 1 / -1;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(10, 10, 10, 0.95), rgba(20, 20, 20, 0.9));
+            border-bottom: 4px solid transparent;
+            box-shadow: var(--shadow-glow);
+            z-index: 100;
+            position: sticky;
+            top: 0;
+            animation: borderPulse 4s infinite;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+        .logo-text {
+            font-size: 2.2rem;
+            font-weight: 900;
+            text-shadow: 0 0 20px var(--primary), 0 0 10px var(--secondary);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: glitch 2s infinite;
+        }
+        .logo-icon {
+            color: var(--primary);
+            font-size: 2.8rem;
+            animation: pulse 1.5s infinite;
+            filter: drop-shadow(0 0 10px var(--primary));
+        }
+        .datetime {
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px var(--secondary);
+            letter-spacing: 1.5px;
+            font-family: 'Courier New', monospace;
+        }
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(to bottom, var(--dark-card), #151515);
+            padding: 2rem 1rem;
+            border-right: 4px solid transparent;
+            box-shadow: var(--shadow-glow);
+            transition: var(--transition);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            animation: borderPulse 4s infinite;
+        }
+        .sidebar-title {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            font-size: 2rem;
+            text-shadow: 0 0 15px var(--primary), 0 0 8px var(--secondary);
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--primary);
+            animation: glitch 3s infinite;
+        }
+        .nav-item {
+            padding: 1.2rem;
+            margin: 12px 0;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            animation: borderPulse 4s infinite;
+        }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--holo-gradient);
+            transition: 0.5s;
+        }
+        .nav-item:hover::before {
+            left: 100%;
+        }
+        .nav-item.active {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: black;
+            box-shadow: var(--shadow-glow);
+            transform: scale(1.02);
+        }
+        .nav-item:hover {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: black;
+            box-shadow: var(--shadow-glow);
+            transform: scale(1.02);
+            animation: glitch 0.5s;
+        }
+        .nav-item i {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 6px var(--secondary));
+        }
+        /* Main Content */
+        .main-content {
+            padding: 2.5rem;
+            overflow-y: auto;
+            background: linear-gradient(to bottom, rgba(10, 10, 10, 0.8), rgba(20, 20, 20, 0.7));
+        }
+        .dashboard-title {
+            font-size: 2.8rem;
+            margin-bottom: 2.5rem;
+            text-shadow: 0 0 20px var(--primary), 0 0 10px var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            animation: glitch 4s infinite;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 2.5rem;
+        }
+        .card {
+            background: linear-gradient(135deg, var(--dark-card), #151515);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: var(--shadow-subtle);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            animation: borderPulse 4s infinite;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: var(--holo-gradient);
+            transition: var(--transition);
+        }
+        .card:hover {
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-8px) scale(1.03);
+            border-color: var(--secondary);
+        }
+        .card:hover::before {
+            transform: rotate(45deg);
+        }
+        .card-title {
+            font-size: 1.6rem;
+            margin-bottom: 1.2rem;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-shadow: 0 0 8px var(--primary);
+            animation: glitch 3s infinite;
+        }
+        .bitcoin-card {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 3px solid var(--bitcoin-gold);
+            box-shadow: var(--bitcoin-glow);
+            animation: bitcoinPulse 2s infinite;
+        }
+        .bitcoin-card:hover {
+            box-shadow: 0 0 25px var(--bitcoin-gold), 0 0 35px var(--bitcoin-dark);
+            transform: translateY(-10px) scale(1.05);
+        }
+        .bitcoin-card::before {
+            background: linear-gradient(45deg, rgba(247, 147, 26, 0.2), rgba(212, 123, 15, 0.2), transparent);
+        }
+        .bitcoin-title {
+            color: var(--bitcoin-gold);
+            text-shadow: 0 0 10px var(--bitcoin-gold);
+            border-bottom: 2px solid var(--bitcoin-dark);
+        }
+        .bitcoin-progress-bar {
+            background: #1a1a1a;
+            border: 2px solid var(--bitcoin-gold);
+            box-shadow: var(--bitcoin-glow);
+        }
+        .bitcoin-progress-fill {
+            background: linear-gradient(90deg, var(--bitcoin-gold), var(--bitcoin-dark));
+            box-shadow: var(--bitcoin-glow);
+        }
+        .bitcoin-stat-card {
+            background: rgba(26, 26, 26, 0.6);
+            border: 2px solid var(--bitcoin-gold);
+            box-shadow: var(--bitcoin-glow);
+        }
+        .bitcoin-stat-value {
+            color: var(--bitcoin-gold);
+            text-shadow: 0 0 10px var(--bitcoin-gold);
+        }
+        .bitcoin-terminal {
+            background: linear-gradient(to bottom, rgba(26, 26, 26, 0.9), rgba(40, 40, 40, 0.85));
+            border: 3px solid var(--bitcoin-gold);
+            box-shadow: var(--bitcoin-glow);
+        }
+        /* Network Graph Styles */
+        .network-graph {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--secondary);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .node {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: var(--shadow-glow);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .node:hover {
+            transform: scale(1.5);
+            box-shadow: 0 0 20px var(--secondary), 0 0 30px var(--primary);
+        }
+        .node.server {
+            background: var(--secondary);
+            width: 30px;
+            height: 30px;
+        }
+        .node.active {
+            animation: pulse 1s infinite;
+        }
+        .connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 5px var(--primary);
+            animation: connectionFlow 2s infinite linear;
+        }
+        /* Progress bars */
+        .progress-container {
+            margin: 1.2rem 0;
+        }
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+        }
+        .bitcoin-progress-label {
+            color: var(--bitcoin-gold);
+            text-shadow: 0 0 8px var(--bitcoin-gold);
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .progress-bar {
+            height: 28px;
+            background: #000;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+            animation: borderPulse 4s infinite;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 1s ease;
+            box-shadow: var(--shadow-glow);
+            animation: neon-flicker 1.5s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--holo-gradient);
+            animation: progressShine 2s infinite;
+        }
+        /* Network Stats */
+        .network-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--secondary);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            animation: borderPulse 4s infinite;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+            font-family: 'Courier New', monospace;
+        }
+        /* Toggle Switches */
+        .toggle-container {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-subtle);
+            transition: var(--transition);
+            position: relative;
+            animation: borderPulse 4s infinite;
+        }
+        .bitcoin-toggle-container {
+            background: rgba(26, 26, 26, 0.6);
+            border: 2px solid var(--bitcoin-gold);
+            box-shadow: var(--bitcoin-glow);
+        }
+        .bitcoin-toggle-container:hover {
+            box-shadow: 0 0 20px var(--bitcoin-gold);
+            transform: translateY(-5px);
+        }
+        .toggle-container:hover {
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-3px);
+        }
+        .toggle-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .toggle-label {
+            font-weight: 900;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-shadow: 0 0 6px var(--secondary);
+        }
+        .bitcoin-toggle-label {
+            color: var(--bitcoin-gold);
+            text-shadow: 0 0 8px var(--bitcoin-gold);
+        }
+        .toggle-description {
+            font-size: 1rem;
+            opacity: 0.85;
+            margin-top: 8px;
+            line-height: 1.4;
+            font-family: 'Courier New', monospace;
+        }
+        .bitcoin-toggle-description {
+            color: var(--bitcoin-gold);
+            opacity: 0.9;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 85px;
+            height: 40px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #111;
+            border: 3px solid transparent;
+            box-shadow: var(--shadow-glow);
+            transition: .4s;
+            border-radius: 40px;
+            animation: borderPulse 4s infinite;
+        }
+        .bitcoin-toggle-slider {
+            border: 3px solid var(--bitcoin-gold);
+            box-shadow: var(--bitcoin-glow);
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 5px;
+            bottom: 3px;
+            background-color: var(--secondary);
+            box-shadow: 0 0 12px var(--secondary);
+            transition: .4s;
+            border-radius: 50%;
+        }
+        .bitcoin-toggle-slider:before {
+            background-color: var(--bitcoin-dark);
+            box-shadow: 0 0 12px var(--bitcoin-dark);
+        }
+        input:checked + .toggle-slider {
+            background-color: var(--primary);
+            box-shadow: 0 0 20px var(--primary);
+        }
+        input:checked + .bitcoin-toggle-slider {
+            background-color: var(--bitcoin-gold);
+            box-shadow: 0 0 20px var(--bitcoin-gold);
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(40px);
+            background-color: #000;
+            box-shadow: 0 0 8px #000;
+        }
+        input:checked + .bitcoin-toggle-slider:before {
+            background-color: #000;
+            box-shadow: 0 0 8px var(--bitcoin-dark);
+        }
+        .toggle-icons {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 14px;
+            pointer-events: none;
+            font-size: 16px;
+            font-weight: 900;
+            text-shadow: 0 0 6px var(--secondary);
+            font-family: 'Courier New', monospace;
+        }
+        .bitcoin-toggle-icons {
+            text-shadow: 0 0 6px var(--bitcoin-gold);
+        }
+        /* System terminal */
+        .terminal {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(10, 10, 10, 0.9));
+            border: 3px solid transparent;
+            border-radius: 10px;
+            padding: 1.5rem;
+            height: 280px;
+            overflow-y: auto;
+            margin-top: 2.5rem;
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            animation: borderPulse 4s infinite;
+        }
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent, rgba(0, 170, 255, 0.1) 50%, transparent);
+            animation: scanline 6s infinite linear;
+            pointer-events: none;
+        }
+        .terminal-line {
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+        .terminal-prompt {
+            color: var(--secondary);
+            margin-right: 12px;
+            font-weight: bold;
+            animation: cursorBlink 0.8s infinite;
+        }
+        .bitcoin-terminal-prompt {
+            color: var(--bitcoin-gold);
+            text-shadow: 0 0 6px var(--bitcoin-gold);
+        }
+        #terminal-command::after,
+        #bitcoin-command::after {
+            content: '|';
+            color: var(--primary);
+            margin-left: 2px;
+            animation: cursorBlink 0.8s infinite;
+        }
+        #bitcoin-command::after {
+            color: var(--bitcoin-gold);
+        }
+        /* Learning Section */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 2.5rem;
+        }
+        .module-card {
+            background: linear-gradient(135deg, var(--dark-card), #151515);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 2rem;
+            transition: var(--transition);
+            cursor: pointer;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            animation: borderPulse 4s infinite;
+        }
+        .module-card:hover {
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-8px) scale(1.03);
+            border-color: var(--secondary);
+        }
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: var(--holo-gradient);
+            transition: var(--transition);
+        }
+        .module-card:hover::before {
+            transform: rotate(45deg);
+        }
+        .module-icon {
+            font-size: 2.8rem;
+            margin-bottom: 1.2rem;
+            color: var(--secondary);
+            filter: drop-shadow(0 0 10px var(--secondary));
+        }
+        .module-title {
+            font-size: 1.6rem;
+            margin-bottom: 0.8rem;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+        }
+        .module-desc {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+            font-family: 'Courier New', monospace;
+        }
+        .module-progress {
+            height: 10px;
+            background: #222;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 0.8rem;
+        }
+        .module-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 1s ease;
+            box-shadow: var(--shadow-glow);
+        }
+        .module-status {
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+        /* Lesson Content */
+        .lesson-content {
+            background: linear-gradient(135deg, var(--dark-card), #151515);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--shadow-subtle);
+            animation: borderPulse 4s infinite;
+        }
+        .lesson-title {
+            font-size: 2rem;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--secondary);
+            text-shadow: 0 0 10px var(--primary);
+            animation: glitch 3s infinite;
+        }
+        .lesson-text {
+            margin-bottom: 2rem;
+            line-height: 1.8;
+            font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+        }
+        .code-block {
+            background: #000;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.2rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            animation: borderPulse 4s infinite;
+        }
+        .code-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--holo-gradient);
+            transition: 0.5s;
+        }
+        .code-block:hover::before {
+            left: 100%;
+        }
+        .code-comment {
+            color: #57a64a;
+            font-style: italic;
+        }
+        .code-keyword {
+            color: #569cd6;
+            font-weight: bold;
+        }
+        .code-function {
+            color: #dcdcaa;
+        }
+        .code-string {
+            color: #ce9178;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        .nav-btn {
+            background: linear-gradient(45deg, var(--dark-card), #151515);
+            border: 2px solid transparent;
+            color: var(--primary);
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            text-shadow: 0 0 6px var(--secondary);
+            animation: borderPulse 4s infinite;
+            font-family: 'Courier New', monospace;
+        }
+        .nav-btn:hover {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: #000;
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-3px);
+        }
+        /* Light mode styles */
+        body.light-mode .sidebar {
+            background: linear-gradient(to bottom, var(--light-card), #d0d0d0);
+            border-right: 4px solid var(--primary-dark);
+        }
+        body.light-mode .card {
+            background: linear-gradient(135deg, var(--light-card), #d0d0d0);
+            border: 2px solid var(--secondary-dark);
+        }
+        body.light-mode .bitcoin-card {
+            background: linear-gradient(135deg, #e0e0e0, #d0d0d0);
+            border: 2px solid var(--bitcoin-dark);
+        }
+        body.light-mode .bitcoin-toggle-container {
+            background: rgba(224, 224, 224, 0.6);
+            border: 2px solid var(--bitcoin-dark);
+        }
+        body.light-mode .toggle-container {
+            background: rgba(224, 224, 224, 0.6);
+            border: 2px solid var(--secondary-dark);
+        }
+        body.light-mode .toggle-slider {
+            background-color: #ccc;
+            border: 3px solid var(--secondary-dark);
+            box-shadow: 0 0 12px rgba(0, 136, 204, 0.4);
+        }
+        body.light-mode .bitcoin-toggle-slider {
+            border: 3px solid var(--bitcoin-dark);
+            box-shadow: 0 0 12px var(--bitcoin-dark);
+        }
+        body.light-mode .toggle-slider:before {
+            background-color: var(--secondary-dark);
+            box-shadow: 0 0 12px rgba(0, 136, 204, 0.4);
+        }
+        body.light-mode .bitcoin-toggle-slider:before {
+            background-color: var(--bitcoin-dark);
+            box-shadow: 0 0 12px var(--bitcoin-dark);
+        }
+        body.light-mode input:checked + .toggle-slider {
+            background-color: var(--primary-dark);
+            box-shadow: 0 0 20px rgba(0, 150, 0, 0.5);
+        }
+        body.light-mode input:checked + .bitcoin-toggle-slider {
+            background-color: var(--bitcoin-dark);
+            box-shadow: 0 0 20px var(--bitcoin-dark);
+        }
+        body.light-mode .terminal {
+            background: linear-gradient(to bottom, rgba(224, 224, 224, 0.85), rgba(200, 200, 200, 0.9));
+            border: 3px solid var(--secondary-dark);
+        }
+        body.light-mode .bitcoin-terminal {
+            background: linear-gradient(to bottom, rgba(224, 224, 224, 0.85), rgba(200, 200, 200, 0.9));
+            border: 3px solid var(--bitcoin-dark);
+        }
+        body.light-mode .terminal-prompt {
+            color: var(--secondary-dark);
+        }
+        body.light-mode .bitcoin-terminal-prompt {
+            color: var(--bitcoin-dark);
+        }
+        body.light-mode .module-card {
+            background: linear-gradient(135deg, var(--light-card), #d0d0d0);
+            border: 2px solid var(--secondary-dark);
+        }
+        body.light-mode .module-title {
+            color: var(--primary-dark);
+            text-shadow: 0 0 8px var(--primary-dark);
+        }
+        body.light-mode .module-icon {
+            color: var(--secondary-dark);
+            filter: drop-shadow(0 0 8px var(--secondary-dark));
+        }
+        body.light-mode .lesson-content {
+            background: linear-gradient(135deg, var(--light-card), #d0d0d0);
+            border: 2px solid var(--secondary-dark);
+        }
+        body.light-mode .nav-btn {
+            background: linear-gradient(45deg, var(--light-card), #d0d0d0);
+            border: 2px solid var(--secondary-dark);
+            color: var(--primary-dark);
+        }
+        body.light-mode .nav-btn:hover {
+            background: linear-gradient(45deg, var(--primary-dark), var(--secondary-dark));
+            color: #fff;
+        }
+        body.light-mode .network-graph {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--secondary-dark);
+        }
+        body.light-mode .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--secondary-dark);
+        }
+        body.light-mode .bitcoin-stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--bitcoin-dark);
+        }
+        /* Section styles */
+        .content-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        .content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes neon-flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+                box-shadow: var(--shadow-glow);
+            }
+            20%, 24%, 55% {
+                opacity: 0.85;
+                box-shadow: 0 0 8px var(--primary);
+            }
+        }
+        @keyframes textFlicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                text-shadow: 0 0 20px var(--primary), 0 0 10px var(--secondary);
+            }
+            20%, 24%, 55% {
+                text-shadow: 0 0 10px var(--primary), 0 0 5px var(--secondary);
+            }
+        }
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-1px, 1px); }
+            80% { transform: translate(1px, -1px); }
+            100% { transform: translate(0); }
+        }
+        @keyframes bitcoinPulse {
+            0% { box-shadow: var(--bitcoin-glow); }
+            50% { box-shadow: 0 0 20px var(--bitcoin-gold), 0 0 30px var(--bitcoin-dark); }
+            100% { box-shadow: var(--bitcoin-glow); }
+        }
+        @keyframes backgroundPulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.5; }
+        }
+        @keyframes progressShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        @keyframes cursorBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-30px) translateX(15px); }
+            100% { transform: translateY(0) translateX(0); }
+        }
+        @keyframes borderPulse {
+            0% { border-color: var(--primary); }
+            50% { border-color: var(--secondary); }
+            100% { border-color: var(--primary); }
+        }
+        @keyframes bitcoinBorderPulse {
+            0% { border-color: var(--bitcoin-gold); }
+            50% { border-color: var(--bitcoin-dark); }
+            100% { border-color: var(--bitcoin-gold); }
+        }
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        @keyframes connectionFlow {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 0%; }
+        }
+        /* Responsive design */
+        @media (min-width: 1800px) {
+            .container {
+                grid-template-columns: 300px 1fr;
+            }
+            .card-grid, .module-grid {
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            }
+            .dashboard-title {
+                font-size: 3rem;
+            }
+        }
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 200px 1fr;
+            }
+            .card-grid, .module-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                border-right: none;
+                border-bottom: 4px solid var(--primary);
+                position: relative;
+                height: auto;
+            }
+            .card-grid, .module-grid {
+                grid-template-columns: 1fr;
+            }
+            .dashboard-title {
+                font-size: 2rem;
+            }
+            .network-graph {
+                height: 200px;
+            }
+        }
+        @media (max-width: 600px) {
+            header {
+                padding: 1rem;
+            }
+            .logo-text {
+                font-size: 1.5rem;
+            }
+            .logo-icon {
+                font-size: 2rem;
+            }
+            .sidebar {
+                padding: 1.5rem 0.5rem;
+            }
+            .nav-item {
+                padding: 0.8rem;
+                margin: 8px 0;
+            }
+            .main-content {
+                padding: 1.5rem;
+            }
+            .card {
+                padding: 1.2rem;
+            }
+            .network-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 400px) {
+            .dashboard-title {
+                font-size: 1.8rem;
+            }
+            .card-title {
+                font-size: 1.3rem;
+            }
+            .toggle-switch {
+                width: 60px;
+                height: 30px;
+            }
+            .toggle-slider:before {
+                height: 22px;
+                width: 22px;
+                left: 3px;
+                bottom: 2px;
+            }
+            input:checked + .toggle-slider:before {
+                transform: translateX(28px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles"></div>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-terminal"></i></div>
+                <div class="logo-text">RAJAH4CK3R v2.1</div>
+            </div>
+            <div class="datetime" id="datetime">00:00:00 | 01-01-2023</div>
+        </header>
+        <aside class="sidebar">
+            <h2 class="sidebar-title">SYSTEM MENU</h2>
+            <div class="nav-item active" data-section="dashboard">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </div>
+            <div class="nav-item" data-section="network">
+                <i class="fas fa-network-wired"></i> Network
+            </div>
+            <div class="nav-item" data-section="security">
+                <i class="fas fa-shield-alt"></i> Security
+            </div>
+            <div class="nav-item" data-section="settings">
+                <i class="fas fa-cog"></i> Settings
+            </div>
+            <div class="nav-item" data-section="learning">
+                <i class="fas fa-graduation-cap"></i> Hacking Lessons
+            </div>
+        </aside>
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <div class="content-section active" id="dashboard-section">
+                <h1 class="dashboard-title"><i class="fas fa-desktop"></i> System Dashboard</h1>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-microchip"></i> CPU Usage</h3>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Load</span>
+                                <span id="cpu-usage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="cpu-progress"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-memory"></i> Memory Usage</h3>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>RAM</span>
+                                <span id="memory-usage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="memory-progress"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-hdd"></i> Storage</h3>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>SSD</span>
+                                <span id="storage-usage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="storage-progress"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="terminal">
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> System initialized at 08:30:42</div>
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> Security protocols: ACTIVE</div>
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> Network encryption: ENABLED (AES-256)</div>
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> Monitoring 12 network nodes</div>
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> <span id="terminal-command">_</span></div>
+                </div>
+            </div>
+            <!-- Network Section -->
+            <div class="content-section" id="network-section">
+                <h1 class="dashboard-title"><i class="fas fa-network-wired"></i> Network Monitoring</h1>
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-project-diagram"></i> Network Topology</h3>
+                    <div class="network-graph" id="network-graph">
+                        <!-- Nodes and connections will be generated by JS -->
+                    </div>
+                </div>
+                <div class="network-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="active-nodes">12</div>
+                        <div class="stat-label">ACTIVE NODES</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="bandwidth">1.2</div>
+                        <div class="stat-label">BANDWIDTH (Gbps)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="latency">45</div>
+                        <div class="stat-label">LATENCY (ms)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="packets">98</div>
+                        <div class="stat-label">PACKET LOSS (%)</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-server"></i> Server Status</h3>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Main Server</span>
+                            <span id="server-status">100%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="server-progress" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Backup Server</span>
+                            <span id="backup-status">85%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="backup-progress" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="terminal">
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> Network scan initiated...</div>
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> Discovered 12 active hosts</div>
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> Port scan: 22, 80, 443 OPEN</div>
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> Vulnerability assessment: COMPLETE</div>
+                    <div class="terminal-line"><span class="terminal-prompt">>></span> <span id="network-terminal">_</span></div>
+                </div>
+            </div>
+            <!-- Settings Section -->
+            <div class="content-section" id="settings-section">
+                <h1 class="dashboard-title"><i class="fas fa-cog"></i> System Settings</h1>
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-toggle-on"></i> Configuration Panel</h3>
+                    <div class="toggle-container">
+                        <div class="toggle-header">
+                            <div class="toggle-label">
+                                <i class="fas fa-palette"></i> Light Mode
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="theme-toggle">
+                                <span class="toggle-slider"></span>
+                                <div class="toggle-icons">
+                                    <span>OFF</span>
+                                    <span>ON</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="toggle-description">
+                            Switch between dark and light themes for better visibility in different lighting conditions.
+                        </div>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-header">
+                            <div class="toggle-label">
+                                <i class="fas fa-bell"></i> Notifications
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notif-toggle" checked>
+                                <span class="toggle-slider"></span>
+                                <div class="toggle-icons">
+                                    <span>OFF</span>
+                                    <span>ON</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="toggle-description">
+                            Receive system alerts and security notifications in real-time.
+                        </div>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-header">
+                            <div class="toggle-label">
+                                <i class="fas fa-user-secret"></i> Stealth Mode
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="stealth-toggle">
+                                <span class="toggle-slider"></span>
+                                <div class="toggle-icons">
+                                    <span>OFF</span>
+                                    <span>ON</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="toggle-description">
+                            Hide your activities from detection and mask your digital footprint.
+                        </div>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-header">
+                            <div class="toggle-label">
+                                <i class="fas fa-lock"></i> Auto-Encrypt
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="encrypt-toggle" checked>
+                                <span class="toggle-slider"></span>
+                                <div class="toggle-icons">
+                                    <span>OFF</span>
+                                    <span>ON</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="toggle-description">
+                            Automatically encrypt all communications and sensitive data with military-grade algorithms.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Learning Section -->
+            <div class="content-section" id="learning-section">
+                <h1 class="dashboard-title"><i class="fas fa-graduation-cap"></i> Hacking Lessons</h1>
+                <div class="module-grid">
+                    <div class="module-card" onclick="showLesson('intro')">
+                        <div class="module-icon"><i class="fas fa-lock-open"></i></div>
+                        <h3 class="module-title">Introduction to Ethical Hacking</h3>
+                        <p class="module-desc">Learn the fundamentals of ethical hacking and cybersecurity principles.</p>
+                        <div class="module-progress">
+                            <div class="module-progress-bar" style="width: 25%"></div>
+                        </div>
+                        <div class="module-status">
+                            <span>Beginner</span>
+                            <span>25% Complete</span>
+                        </div>
+                    </div>
+                    <div class="module-card" onclick="showLesson('networking')">
+                        <div class="module-icon"><i class="fas fa-network-wired"></i></div>
+                        <h3 class="module-title">Networking Fundamentals</h3>
+                        <p class="module-desc">Understand how networks operate and how to identify vulnerabilities.</p>
+                        <div class="module-progress">
+                            <div class="module-progress-bar" style="width: 10%"></div>
+                        </div>
+                        <div class="module-status">
+                            <span>Beginner</span>
+                            <span>10% Complete</span>
+                        </div>
+                    </div>
+                    <div class="module-card" onclick="showLesson('webapp')">
+                        <div class="module-icon"><i class="fas fa-code"></i></div>
+                        <h3 class="module-title">Web Application Security</h3>
+                        <p class="module-desc">Learn about common web vulnerabilities and how to protect against them.</p>
+                        <div class="module-progress">
+                            <div class="module-progress-bar" style="width: 5%"></div>
+                        </div>
+                        <div class="module-status">
+                            <span>Intermediate</span>
+                            <span>5% Complete</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lesson-content" id="lesson-content">
+                    <h2 class="lesson-title">Introduction to Ethical Hacking</h2>
+                    <div class="lesson-text">
+                        <p>Ethical hacking involves an authorized attempt to gain unauthorized access to a computer system, application, or data. Carrying out an ethical hack involves duplicating strategies and actions of malicious attackers.</p>
+                        <p>This practice helps to identify security vulnerabilities which can then be resolved before a malicious attacker has the opportunity to exploit them.</p>
+                    </div>
+                    <h3 class="card-title"><i class="fas fa-terminal"></i> Key Terminology</h3>
+                    <div class="code-block">
+                        <span class="code-comment"># Common hacking terminology</span><br>
+                        <span class="code-keyword">Vulnerability</span> - A weakness in a system that can be exploited<br>
+                        <span class="code-keyword">Exploit</span> - A piece of code that takes advantage of a vulnerability<br>
+                        <span class="code-keyword">Payload</span> - The part of an exploit that performs the desired action<br>
+                        <span class="code-keyword">Zero-day</span> - A vulnerability that is unknown to the vendor<br>
+                    </div>
+                    <h3 class="card-title"><i class="fas fa-shield-alt"></i> Ethical Hacking Principles</h3>
+                    <div class="lesson-text">
+                        <p>Ethical hackers must follow important guidelines:</p>
+                        <ul style="margin-left: 20px; margin-bottom: 20px;">
+                            <li>Obtain proper authorization before accessing systems</li>
+                            <li>Define the scope of the testing clearly</li>
+                            <li>Report all vulnerabilities discovered</li>
+                            <li>Respect the privacy of the organization</li>
+                            <li>Securely delete all data obtained during testing</li>
+                        </ul>
+                    </div>
+                    <div class="nav-buttons">
+                        <button class="nav-btn"><i class="fas fa-arrow-left"></i> Previous Lesson</button>
+                        <button class="nav-btn">Next Lesson <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+            <!-- Security Section -->
+            <div class="content-section" id="security-section">
+                <h1 class="dashboard-title"><i class="fas fa-shield-alt"></i> Security Center</h1>
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-lock"></i> Security Status</h3>
+                    <p>Security monitoring and threat detection would be displayed here.</p>
+                </div>
+                <div class="card bitcoin-card">
+                    <h3 class="card-title bitcoin-title"><i class="fab fa-bitcoin"></i> High-Level Fake Bitcoin Mining System</h3>
+                    <div class="toggle-container bitcoin-toggle-container">
+                        <div class="toggle-header">
+                            <div class="toggle-label bitcoin-toggle-label">
+                                <i class="fab fa-bitcoin"></i> Activate Bitcoin Mining Hack
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="bitcoin-toggle">
+                                <span class="toggle-slider bitcoin-toggle-slider"></span>
+                                <div class="toggle-icons bitcoin-toggle-icons">
+                                    <span>OFF</span>
+                                    <span>ON</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="toggle-description bitcoin-toggle-description">
+                            Simulate high-level bitcoin mining operations using network nodes (fake simulation for demonstration purposes only).
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label bitcoin-progress-label">
+                            <span>Mining Progress</span>
+                            <span id="bitcoin-progress-label">0 BTC</span>
+                        </div>
+                        <div class="progress-bar bitcoin-progress-bar">
+                            <div class="progress-fill bitcoin-progress-fill" id="bitcoin-progress"></div>
+                        </div>
+                    </div>
+                    <div class="network-stats">
+                        <div class="stat-card bitcoin-stat-card">
+                            <div class="stat-value bitcoin-stat-value" id="hash-rate">0</div>
+                            <div class="stat-label">HASH RATE (TH/s)</div>
+                        </div>
+                        <div class="stat-card bitcoin-stat-card">
+                            <div class="stat-value bitcoin-stat-value" id="blocks-mined">0</div>
+                            <div class="stat-label">BLOCKS MINED</div>
+                        </div>
+                        <div class="stat-card bitcoin-stat-card">
+                            <div class="stat-value bitcoin-stat-value" id="energy-used">0</div>
+                            <div class="stat-label">ENERGY USED (kWh)</div>
+                        </div>
+                    </div>
+                    <div class="terminal bitcoin-terminal" id="bitcoin-terminal">
+                        <div class="terminal-line"><span class="terminal-prompt bitcoin-terminal-prompt">>></span> Bitcoin mining system ready...</div>
+                        <div class="terminal-line"><span class="terminal-prompt bitcoin-terminal-prompt">>></span> <span id="bitcoin-command">_</span></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        // Particle Background
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const size = Math.random() * 5 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.animationDuration = `${Math.random() * 8 + 8}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+        createParticles();
+        // Cursor Trail
+        document.addEventListener('mousemove', (e) => {
+            const trail = document.createElement('div');
+            trail.className = 'cursor-trail';
+            trail.style.left = `${e.clientX}px`;
+            trail.style.top = `${e.clientY}px`;
+            document.body.appendChild(trail);
+            setTimeout(() => {
+                trail.remove();
+            }, 500);
+        });
+        // Update datetime
+        function updateDateTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString();
+            const date = now.toLocaleDateString();
+            document.getElementById('datetime').textContent = `${time} | ${date}`;
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+        // System metrics simulation
+        function updateSystemMetrics() {
+            const cpu = Math.floor(Math.random() * 100);
+            document.getElementById('cpu-usage').textContent = cpu + "%";
+            document.getElementById('cpu-progress').style.width = cpu + "%";
+            const mem = 25 + Math.floor(Math.random() * 60);
+            document.getElementById('memory-usage').textContent = mem + "%";
+            document.getElementById('memory-progress').style.width = mem + "%";
+            const storage = 10 + Math.floor(Math.random() * 40);
+            document.getElementById('storage-usage').textContent = storage + "%";
+            document.getElementById('storage-progress').style.width = storage + "%";
+        }
+        setInterval(updateSystemMetrics, 2000);
+        updateSystemMetrics();
+        // Network metrics simulation
+        function updateNetworkMetrics() {
+            const activeNodes = Math.floor(Math.random() * 20) + 5;
+            document.getElementById('active-nodes').textContent = activeNodes;
+            const bandwidth = (Math.random() * 5 + 0.5).toFixed(1);
+            document.getElementById('bandwidth').textContent = bandwidth;
+            const latency = Math.floor(Math.random() * 100) + 10;
+            document.getElementById('latency').textContent = latency;
+            const packetLoss = Math.floor(Math.random() * 5);
+            document.getElementById('packets').textContent = packetLoss;
+            const serverStatus = Math.floor(Math.random() * 100) + 0;
+            document.getElementById('server-status').textContent = serverStatus + "%";
+            document.getElementById('server-progress').style.width = serverStatus + "%";
+            const backupStatus = Math.floor(Math.random() * 100) + 0;
+            document.getElementById('backup-status').textContent = backupStatus + "%";
+            document.getElementById('backup-progress').style.width = backupStatus + "%";
+        }
+        // Network Graph Generation
+        function createNetworkGraph() {
+            const graphContainer = document.getElementById('network-graph');
+            const nodes = [];
+            const connections = [];
+            // Create central server
+            const centralServer = document.createElement('div');
+            centralServer.className = 'node server active';
+            centralServer.style.left = '50%';
+            centralServer.style.top = '50%';
+            centralServer.style.transform = 'translate(-50%, -50%)';
+            graphContainer.appendChild(centralServer);
+            nodes.push({ element: centralServer, x: 50, y: 50, type: 'server' });
+            // Create client nodes
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const radius = 30;
+                const x = 50 + Math.cos(angle) * radius;
+                const y = 50 + Math.sin(angle) * radius;
+                const node = document.createElement('div');
+                node.className = 'node active';
+                node.style.left = x + '%';
+                node.style.top = y + '%';
+                node.style.transform = 'translate(-50%, -50%)';
+                node.onclick = () => node.classList.toggle('active');
+                graphContainer.appendChild(node);
+                nodes.push({ element: node, x, y, type: 'client' });
+                // Create connections
+                const connection = document.createElement('div');
+                connection.className = 'connection';
+                const width = Math.sqrt(Math.pow(x - 50, 2) + Math.pow(y - 50, 2)) * 2;
+                const left = (50 + x) / 2 + '%';
+                const top = (50 + y) / 2 + '%';
+                const rotation = Math.atan2(y - 50, x - 50) * 180 / Math.PI;
+                connection.style.width = width + '%';
+                connection.style.left = left;
+                connection.style.top = top;
+                connection.style.transform = `rotate(${rotation}deg) translate(-50%, -50%)`;
+                graphContainer.appendChild(connection);
+                connections.push(connection);
+            }
+            // Animate nodes
+            setInterval(() => {
+                nodes.forEach(node => {
+                    if (Math.random() > 0.7) {
+                        node.element.classList.add('active');
+                        setTimeout(() => node.element.classList.remove('active'), 1000);
+                    }
+                });
+            }, 2000);
+        }
+        // Network Terminal Animation
+        const networkCommands = [
+            "nmap -sS 192.168.1.0/24 -p-",
+            "Starting Nmap scan...",
+            "Discovered open ports: 22(SSH), 80(HTTP), 443(HTTPS)",
+            "Service enumeration complete",
+            "Vulnerability scan: 3 high-risk vulnerabilities found",
+            "Generating penetration test report..."
+        ];
+        let networkCommandIndex = 0;
+        let networkCharIndex = 0;
+        let networkIsDeleting = false;
+        function typeNetworkTerminal() {
+            const currentCommand = networkCommands[networkCommandIndex];
+            const terminalElement = document.getElementById('network-terminal');
+            if (networkIsDeleting) {
+                terminalElement.textContent = currentCommand.substring(0, networkCharIndex - 1);
+                networkCharIndex--;
+            } else {
+                terminalElement.textContent = currentCommand.substring(0, networkCharIndex + 1);
+                networkCharIndex++;
+            }
+            if (!networkIsDeleting && networkCharIndex === currentCommand.length) {
+                networkIsDeleting = true;
+                setTimeout(typeNetworkTerminal, 1500);
+            } else if (networkIsDeleting && networkCharIndex === 0) {
+                networkIsDeleting = false;
+                networkCommandIndex = (networkCommandIndex + 1) % networkCommands.length;
+                setTimeout(typeNetworkTerminal, 500);
+            } else {
+                setTimeout(typeNetworkTerminal, networkIsDeleting ? 30 : 80);
+            }
+        }
+        // Theme toggle
+        document.getElementById('theme-toggle').addEventListener('change', function() {
+            document.body.classList.toggle('light-mode', this.checked);
+        });
+        // Main Terminal animation
+        const commands = [
+            "Scanning network vulnerabilities...",
+            "Encrypting outgoing data packets...",
+            "Monitoring firewall activity...",
+            "Updating security protocols...",
+            "Analyzing system logs...",
+            "Verifying blockchain integrity...",
+            "Running penetration tests...",
+            "Backing up encrypted data..."
+        ];
+        let commandIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        function typeTerminalCommand() {
+            const currentCommand = commands[commandIndex];
+            const terminalElement = document.getElementById('terminal-command');
+            if (isDeleting) {
+                terminalElement.textContent = currentCommand.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                terminalElement.textContent = currentCommand.substring(0, charIndex + 1);
+                charIndex++;
+            }
+            if (!isDeleting && charIndex === currentCommand.length) {
+                isDeleting = true;
+                setTimeout(typeTerminalCommand, 2000);
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                commandIndex = (commandIndex + 1) % commands.length;
+                setTimeout(typeTerminalCommand, 500);
+            } else {
+                setTimeout(typeTerminalCommand, isDeleting ? 50 : 100);
+            }
+        }
+        // Section navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                const sectionId = this.getAttribute('data-section') + '-section';
+                document.getElementById(sectionId).classList.add('active');
+                if (sectionId === 'dashboard-section') {
+                    typeTerminalCommand();
+                } else if (sectionId === 'network-section') {
+                    typeNetworkTerminal();
+                    if (!document.getElementById('network-graph').children.length) {
+                        createNetworkGraph();
+                    }
+                    updateNetworkMetrics();
+                    setInterval(updateNetworkMetrics, 3000);
+                } else if (sectionId === 'security-section') {
+                    updateBitcoinMetrics();
+                    setInterval(updateBitcoinMetrics, 2000);
+                }
+            });
+        });
+        // Show lesson function
+        function showLesson(lessonId) {
+            alert(`Loading lesson: ${lessonId}`);
+        }
+        // Initialize terminal animation
+        typeTerminalCommand();
+        // Bitcoin Mining Simulation
+        let miningActive = false;
+        let minedBTC = 0;
+        let miningInterval;
+        function appendBitcoinTerminalLine(message) {
+            const terminal = document.getElementById('bitcoin-terminal');
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `<span class="terminal-prompt bitcoin-terminal-prompt">>></span> ${message}`;
+            terminal.insertBefore(line, document.getElementById('bitcoin-command').parentNode);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        document.getElementById('bitcoin-toggle').addEventListener('change', function() {
+            miningActive = this.checked;
+            const terminal = document.getElementById('bitcoin-terminal');
+            if (miningActive) {
+                appendBitcoinTerminalLine('Bitcoin mining started...');
+                miningInterval = setInterval(() => {
+                    minedBTC += Math.random() * 0.1; // Faster increment for demo
+                    const displayBTC = Math.floor(minedBTC);
+                    document.getElementById('bitcoin-progress-label').textContent = `${displayBTC} BTC`;
+                    document.getElementById('bitcoin-progress').style.width = (minedBTC % 1 * 100) + '%';
+                    if (Math.floor(minedBTC * 10) % 10 === 0 && minedBTC > 0) {
+                        appendBitcoinTerminalLine(`Mined ${displayBTC} BTC! Block #${Math.floor(Math.random() * 1000000)} solved.`);
+                    }
+                }, 1000);
+            } else {
+                appendBitcoinTerminalLine('Bitcoin mining stopped.');
+                clearInterval(miningInterval);
+            }
+        });
+        function updateBitcoinMetrics() {
+            if (miningActive) {
+                const hashRate = (Math.random() * 100 + 50).toFixed(1);
+                document.getElementById('hash-rate').textContent = hashRate;
+                const blocksMined = Math.floor(Math.random() * 5);
+                document.getElementById('blocks-mined').textContent = blocksMined;
+                const energyUsed = (Math.random() * 100 + 200).toFixed(1);
+                document.getElementById('energy-used').textContent = energyUsed;
+            }
+        }
+    </script>
+</body>
+</html>
